@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 결제 내역 · 굿즈샵</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>내 결제 내역</h1>
+    <div class="card table-wrap" id="list">불러오는 중...</div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    async function loadOrders() {
+      const user = await requireLogin();
+      if (!user) return;
+      const { data, error } = await sb.from("orders")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      const box = document.getElementById("list");
+      if (error) { box.innerHTML = `<p class="msg error">${error.message}</p>`; return; }
+      if (!data.length) { box.innerHTML = `<p class="empty">아직 결제 내역이 없습니다.</p>`; return; }
+
+      box.innerHTML = `<table>
+        <tr><th>주문일시</th><th>상품</th><th>금액</th><th>상태</th></tr>
+        ${data.map(o => `<tr>
+          <td>${dateText(o.created_at)}</td>
+          <td>${o.product_name}</td>
+          <td>${won(o.amount)}</td>
+          <td>${statusBadge(o.status)}</td>
+        </tr>`).join("")}
+      </table>`;
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

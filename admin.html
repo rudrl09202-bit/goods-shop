@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 · 굿즈샵</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>관리자 · 전체 결제 내역</h1>
+
+    <!-- 로그인 안 했을 때 -->
+    <div id="login-box" class="card form" hidden>
+      <form id="admin-form">
+        <label for="email">관리자 이메일</label>
+        <input id="email" type="email" required>
+        <label for="password">비밀번호</label>
+        <input id="password" type="password" required>
+        <button type="submit">관리자 로그인</button>
+      </form>
+      <p id="msg" class="msg error"></p>
+    </div>
+
+    <!-- 관리자가 아닐 때 -->
+    <div id="denied" class="card center" hidden>
+      <p>관리자만 볼 수 있는 페이지입니다.</p>
+      <button onclick="logout()">로그아웃 후 관리자로 로그인</button>
+    </div>
+
+    <!-- 관리자일 때 -->
+    <div id="admin-box" hidden>
+      <div class="stats">
+        <div class="card"><div class="num" id="stat-count">-</div><div class="label">결제 완료 건수</div></div>
+        <div class="card"><div class="num" id="stat-total">-</div><div class="label">결제 완료 금액</div></div>
+      </div>
+      <div class="card table-wrap" id="list">불러오는 중...</div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    async function init() {
+      const user = await getUser();
+      if (!user) { document.getElementById("login-box").hidden = false; return; }
+      if (user.email !== ADMIN_EMAIL) { document.getElementById("denied").hidden = false; return; }
+      document.getElementById("admin-box").hidden = false;
+      loadAllOrders();
+    }
+
+    document.getElementById("admin-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const { error } = await sb.auth.signInWithPassword({
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value,
+      });
+      if (error) {
+        document.getElementById("msg").textContent = "이메일 또는 비밀번호가 올바르지 않습니다.";
+        return;
+      }
+      location.reload();
+    });
+
+    // 관리자는 RLS 정책에 따라 모든 주문을 볼 수 있음
+    async function loadAllOrders() {
+      const { data, error } = await sb.from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      const box = document.getElementById("list");
+      if (error) { box.innerHTML = `<p class="msg error">${error.message}</p>`; return; }
+
+      const paid = data.filter(o => o.status === "paid");
+      document.getElementById("stat-count").textContent = paid.length + "건";
+      document.getElementById("stat-total").textContent = won(paid.reduce((s, o) => s + o.amount, 0));
+
+      if (!data.length) { box.innerHTML = `<p class="empty">아직 주문이 없습니다.</p>`; return; }
+      box.innerHTML = `<table>
+        <tr><th>주문일시</th><th>회원 이메일</th><th>상품</th><th>금액</th><th>상태</th><th>결제일시</th></tr>
+        ${data.map(o => `<tr>
+          <td>${dateText(o.created_at)}</td>
+          <td>${o.user_email}</td>
+          <td>${o.product_name}</td>
+          <td>${won(o.amount)}</td>
+          <td>${statusBadge(o.status)}</td>
+          <td>${dateText(o.paid_at)}</td>
+        </tr>`).join("")}
+      </table>`;
+    }
+
+    init();
+  </script>
+</body>
+</html>

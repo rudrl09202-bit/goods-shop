@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>굿즈샵</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>굿즈 둘러보기</h1>
+    <div id="products" class="products"></div>
+
+    <section id="checkout" class="card" hidden>
+      <div class="summary">
+        <strong id="checkout-name"></strong>
+        <strong id="checkout-price"></strong>
+      </div>
+      <div id="payment-method"></div>
+      <div id="agreement"></div>
+      <div class="actions">
+        <button class="secondary" onclick="closeCheckout()">취소</button>
+        <button id="pay-btn" onclick="pay()">결제하기</button>
+      </div>
+      <p id="pay-msg" class="msg error"></p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    let products = [];
+    let selected = null;
+    let widgets = null;
+
+    async function loadProducts() {
+      const { data, error } = await sb.from("products").select("*").order("id");
+      const box = document.getElementById("products");
+      if (error) {
+        box.innerHTML = `<p class="msg error">상품을 불러오지 못했습니다: ${error.message}</p>`;
+        return;
+      }
+      products = data;
+      box.innerHTML = data.map(p => `
+        <div class="card product">
+          <div class="emoji">${p.emoji}</div>
+          <div class="name">${p.name}</div>
+          <div class="desc">${p.description}</div>
+          <div class="price">${won(p.price)}</div>
+          <button onclick="buy(${p.id})">구매하기</button>
+        </div>`).join("");
+    }
+
+    // 상품 선택 → 토스 결제위젯 표시
+    async function buy(id) {
+      const user = await getUser();
+      if (!user) {
+        alert("로그인 후 구매할 수 있습니다.");
+        location.href = "login.html";
+        return;
+      }
+      selected = products.find(p => p.id === id);
+      document.getElementById("checkout-name").textContent = `${selected.emoji} ${selected.name}`;
+      document.getElementById("checkout-price").textContent = won(selected.price);
+      document.getElementById("pay-msg").textContent = "";
+      document.getElementById("checkout").hidden = false;
+
+      const amount = { currency: "KRW", value: selected.price };
+      if (!widgets) {
+        widgets = TossPayments(TOSS_CLIENT_KEY).widgets({ customerKey: user.id });
+        await widgets.setAmount(amount);
+        await Promise.all([
+          widgets.renderPaymentMethods({ selector: "#payment-method", variantKey: "DEFAULT" }),
+          widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
+        ]);
+      } else {
+        await widgets.setAmount(amount);
+      }
+      document.getElementById("checkout").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function closeCheckout() {
+      document.getElementById("checkout").hidden = true;
+    }
+
+    // 주문 저장 → 토스 결제창 열기
+    async function pay() {
+      const btn = document.getElementById("pay-btn");
+      const msg = document.getElementById("pay-msg");
+      btn.disabled = true;
+      msg.textContent = "";
+
+      const orderId = crypto.randomUUID();
+      const { error } = await sb.from("orders").insert({
+        order_id: orderId,
+        product_id: selected.id,
+        product_name: selected.name,
+        amount: selected.price,
+      });
+      if (error) {
+        msg.textContent = "주문을 만들지 못했습니다: " + error.message;
+        btn.disabled = false;
+        return;
+      }
+
+      const user = await getUser();
+      try {
+        await widgets.requestPayment({
+          orderId,
+          orderName: selected.name,
+          customerEmail: user.email,
+          successUrl: new URL("success.html", location.href).href,
+          failUrl: new URL("fail.html", location.href).href,
+        });
+      } catch (e) {
+        msg.textContent = e.message || "결제가 취소되었습니다.";
+      }
+      btn.disabled = false;
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>

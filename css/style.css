@@ -1,0 +1,119 @@
+:root {
+  --bg: #f7f7fb;
+  --card: #ffffff;
+  --text: #1d1d27;
+  --muted: #6b6b80;
+  --line: #e4e4ee;
+  --primary: #3d5afe;
+  --primary-text: #ffffff;
+  --ok: #1a9c5b;
+  --warn: #c98a00;
+  --err: #d6334a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121218;
+    --card: #1c1c25;
+    --text: #ececf3;
+    --muted: #9a9ab0;
+    --line: #2d2d3a;
+    --primary: #6d82ff;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Noto Sans KR", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+#nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 20px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+#nav a { color: var(--text); text-decoration: none; }
+.logo { font-weight: 700; font-size: 1.15rem; }
+.nav-links { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: .95rem; }
+.nav-email { color: var(--muted); font-size: .85rem; }
+
+main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 1.6rem; margin: 0 0 20px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+button, .btn {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 18px;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-weight: 600;
+}
+button:disabled { opacity: .5; cursor: default; }
+button.link { background: none; color: var(--muted); padding: 0; font-weight: 400; }
+button.secondary { background: var(--line); color: var(--text); }
+
+/* 상품 */
+.products { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.product { display: flex; flex-direction: column; gap: 6px; }
+.product .emoji { font-size: 3.5rem; text-align: center; padding: 16px 0; }
+.product .name { font-weight: 700; }
+.product .desc { color: var(--muted); font-size: .9rem; flex: 1; }
+.product .price { font-weight: 700; font-size: 1.1rem; margin: 6px 0 10px; }
+
+#checkout { margin-top: 28px; }
+#checkout .summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+/* 폼 */
+.form { max-width: 400px; margin: 0 auto; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tabs button { flex: 1; background: var(--line); color: var(--text); }
+.tabs button.active { background: var(--primary); color: var(--primary-text); }
+label { display: block; font-size: .9rem; margin: 12px 0 4px; }
+input {
+  width: 100%;
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+}
+.form button[type="submit"] { width: 100%; margin-top: 20px; }
+.msg { margin-top: 12px; font-size: .9rem; min-height: 1.2em; }
+.msg.error { color: var(--err); }
+.msg.ok { color: var(--ok); }
+
+/* 표 */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 500; }
+.badge { padding: 2px 8px; border-radius: 99px; font-size: .8rem; font-weight: 600; }
+.badge.paid { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+.badge.pending { background: color-mix(in srgb, var(--warn) 15%, transparent); color: var(--warn); }
+.badge.failed { background: color-mix(in srgb, var(--err) 15%, transparent); color: var(--err); }
+.empty { color: var(--muted); text-align: center; padding: 32px 0; }
+.stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.stats .card { flex: 1; min-width: 140px; padding: 14px 16px; }
+.stats .num { font-size: 1.3rem; font-weight: 700; }
+.stats .label { color: var(--muted); font-size: .85rem; }
+
+.center { text-align: center; }

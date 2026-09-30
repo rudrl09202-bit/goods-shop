@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>결제 결과 · 굿즈샵</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <div class="card center">
+      <h1 id="title">결제 확인 중...</h1>
+      <p id="detail" class="msg"></p>
+      <p><a class="btn" href="orders.html">내 결제 내역 보기</a></p>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    // 토스가 넘겨준 값으로 서버(Edge Function)에 결제 승인 요청
+    async function confirmPayment() {
+      await requireLogin();
+      const q = new URLSearchParams(location.search);
+      const { data, error } = await sb.functions.invoke("confirm-payment", {
+        body: {
+          paymentKey: q.get("paymentKey"),
+          orderId: q.get("orderId"),
+          amount: Number(q.get("amount")),
+        },
+      });
+
+      const title = document.getElementById("title");
+      const detail = document.getElementById("detail");
+      if (error) {
+        let message = error.message;
+        try { message = (await error.context.json()).message; } catch (_) {}
+        title.textContent = "결제에 실패했습니다";
+        detail.className = "msg error";
+        detail.textContent = message;
+        return;
+      }
+      title.textContent = "결제가 완료되었습니다 🎉";
+      detail.textContent = `${data.order.product_name} · ${won(data.order.amount)}`;
+    }
+
+    confirmPayment();
+  </script>
+</body>
+</html>
