@@ -9,10 +9,23 @@
 </head>
 <body>
   <nav id="nav"></nav>
-  <main>
-    <div class="intro">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="hero-line"></span>
       <h1>오래 쓰는 물건들</h1>
-      <p>가죽 소품과 주얼리, 시계까지 직접 고른 열두 가지</p>
+      <p>가죽 소품과 주얼리, 시계까지<br>직접 고른 열두 가지</p>
+      <a class="btn gold" href="#collection">컬렉션 보기</a>
+    </div>
+    <div class="hero-photos" aria-hidden="true">
+      <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=700&q=80" alt="">
+      <img src="https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=700&q=80" alt="">
+      <img src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=700&q=80" alt="">
+    </div>
+  </header>
+  <main>
+    <div class="section-title" id="collection">
+      <h2>컬렉션</h2>
+      <p id="count"></p>
     </div>
     <div id="products" class="products"></div>
 
@@ -48,9 +61,10 @@
         return;
       }
       products = data;
+      document.getElementById("count").textContent = `${data.length}점`;
       box.innerHTML = data.map(p => `
         <button class="product" onclick="buy(${p.id})" aria-label="${p.name} 구매하기">
-          <span class="photo"><img src="${p.image_url}" alt="" loading="lazy"></span>
+          <span class="photo"><img src="${p.image_url}" alt="" loading="lazy"><span class="buy">구매하기</span></span>
           <span class="desc">${p.description}</span>
           <span class="name">${p.name}</span>
           <span class="price">${won(p.price)}</span>

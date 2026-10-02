@@ -47,4 +47,14 @@ async function renderNav() {
     `<a class="logo" href="index.html">MAISON</a><div class="nav-links">${links}</div>`;
 }
 
+// 하단 영역 (모든 페이지 공통)
+function renderFooter() {
+  document.body.insertAdjacentHTML("beforeend", `
+    <footer class="site-footer">
+      <div class="footer-logo">MAISON</div>
+      <p>토스페이먼츠 테스트 결제 환경입니다. 실제로 결제되지 않습니다.</p>
+    </footer>`);
+}
+
 renderNav();
+renderFooter();
