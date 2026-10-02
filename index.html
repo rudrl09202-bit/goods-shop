@@ -47,7 +47,7 @@
       products = data;
       box.innerHTML = data.map(p => `
         <div class="card product">
-          <div class="emoji">${p.emoji}</div>
+          <img src="${p.image_url}" alt="${p.name}" loading="lazy">
           <div class="name">${p.name}</div>
           <div class="desc">${p.description}</div>
           <div class="price">${won(p.price)}</div>
@@ -64,7 +64,7 @@
         return;
       }
       selected = products.find(p => p.id === id);
-      document.getElementById("checkout-name").textContent = `${selected.emoji} ${selected.name}`;
+      document.getElementById("checkout-name").textContent = selected.name;
       document.getElementById("checkout-price").textContent = won(selected.price);
       document.getElementById("pay-msg").textContent = "";
       document.getElementById("checkout").hidden = false;

@@ -82,12 +82,12 @@
       box.innerHTML = `<table>
         <tr><th>주문일시</th><th>회원 이메일</th><th>상품</th><th>금액</th><th>상태</th><th>결제일시</th></tr>
         ${data.map(o => `<tr>
-          <td>${dateText(o.created_at)}</td>
-          <td>${o.user_email}</td>
-          <td>${o.product_name}</td>
-          <td>${won(o.amount)}</td>
-          <td>${statusBadge(o.status)}</td>
-          <td>${dateText(o.paid_at)}</td>
+          <td data-label="주문일시">${dateText(o.created_at)}</td>
+          <td data-label="회원">${o.user_email}</td>
+          <td data-label="상품">${o.product_name}</td>
+          <td data-label="금액">${won(o.amount)}</td>
+          <td data-label="상태">${statusBadge(o.status)}</td>
+          <td data-label="결제일시">${dateText(o.paid_at)}</td>
         </tr>`).join("")}
       </table>`;
     }
