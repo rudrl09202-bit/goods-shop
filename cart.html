@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>장바구니 | MAISON</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&family=Noto+Serif+KR:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cart.css">
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>장바구니</h1>
+    <p id="load-msg" class="msg error"></p>
+
+    <div id="empty" class="empty" hidden>
+      <p>장바구니가 비어 있습니다.</p>
+      <a class="btn" href="index.html#collection">컬렉션 보기</a>
+    </div>
+
+    <div id="cart" class="cart" hidden>
+      <ul id="lines" class="lines"></ul>
+
+      <section class="summary">
+        <div class="total">
+          <span>합계</span>
+          <strong id="total"></strong>
+        </div>
+        <a id="login-link" class="btn" href="login.html?next=cart.html" hidden>로그인하고 결제하기</a>
+        <div id="pay-area" hidden>
+          <div id="payment-method"></div>
+          <div id="agreement"></div>
+          <button id="pay-btn" onclick="pay()" disabled>결제하기</button>
+        </div>
+        <p id="pay-msg" class="msg error"></p>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    let products = []; // 장바구니에 든 상품 정보 (DB)
+    let user = null;
+    let widgets = null;
+
+    function cartTotal() {
+      return getCart().reduce((sum, i) => {
+        const p = products.find(p => p.id === i.productId);
+        return sum + (p ? p.price * i.quantity : 0);
+      }, 0);
+    }
+
+    // 장바구니 상품을 DB에서 불러오기
+    async function load() {
+      const cart = getCart();
+      if (cart.length) {
+        const { data, error } = await sb
+          .from("products")
+          .select("id,name,price,image_url,description")
+          .in("id", cart.map(i => i.productId));
+        if (error) {
+          document.getElementById("load-msg").textContent = "상품을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
+          return;
+        }
+        products = data;
+        // DB에 없는 상품(삭제된 상품)은 장바구니에서 뺀다
+        const cleaned = cart.filter(i => products.some(p => p.id === i.productId));
+        if (cleaned.length !== cart.length) saveCart(cleaned);
+      }
+
+      render();
+      if (!getCart().length) return;
+
+      user = await getUser();
+      if (user) {
+        document.getElementById("pay-area").hidden = false;
+        initWidget();
+      } else {
+        document.getElementById("login-link").hidden = false;
+      }
+    }
+
+    // 목록과 합계 그리기
+    function render() {
+      const cart = getCart();
+      document.getElementById("empty").hidden = cart.length > 0;
+      document.getElementById("cart").hidden = cart.length === 0;
+      if (!cart.length) return;
+
+      document.getElementById("lines").innerHTML = cart.map(i => {
+        const p = products.find(p => p.id === i.productId);
+        const link = `product.html?id=${p.id}`;
+        return `
+          <li class="line">
+            <a class="line-photo" href="${link}"><img src="${esc(p.image_url)}" alt="${esc(p.name)}"></a>
+            <div class="line-info">
+              <span class="line-desc">${esc(p.description)}</span>
+              <a class="line-name" href="${link}">${esc(p.name)}</a>
+              <span class="line-price">${won(p.price)}</span>
+            </div>
+            <div class="line-actions">
+              <div class="qty">
+                <button onclick="changeQty(${p.id}, -1)" aria-label="수량 줄이기" ${i.quantity <= 1 ? "disabled" : ""}>−</button>
+                <span>${i.quantity}</span>
+                <button onclick="changeQty(${p.id}, 1)" aria-label="수량 늘리기" ${i.quantity >= CART_MAX_QTY ? "disabled" : ""}>+</button>
+              </div>
+              <button class="link remove" onclick="removeLine(${p.id})">삭제</button>
+            </div>
+            <strong class="line-sub">${won(p.price * i.quantity)}</strong>
+          </li>`;
+      }).join("");
+      document.getElementById("total").textContent = won(cartTotal());
+    }
+
+    // 수량이나 상품이 바뀐 뒤: 다시 그리고 결제 금액도 맞춘다
+    function refresh() {
+      render();
+      if (widgets && getCart().length) {
+        widgets.setAmount({ currency: "KRW", value: cartTotal() });
+      }
+    }
+
+    function changeQty(productId, diff) {
+      const item = getCart().find(i => i.productId === productId);
+      if (!item) return;
+      setCartQty(productId, item.quantity + diff);
+      refresh();
+    }
+
+    function removeLine(productId) {
+      removeFromCart(productId);
+      refresh();
+    }
+
+    // 토스 결제 위젯 (한 번만 그림)
+    async function initWidget() {
+      try {
+        widgets = TossPayments(TOSS_CLIENT_KEY).widgets({ customerKey: user.id });
+        await widgets.setAmount({ currency: "KRW", value: cartTotal() });
+        await Promise.all([
+          widgets.renderPaymentMethods({ selector: "#payment-method", variantKey: "DEFAULT" }),
+          widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
+        ]);
+        document.getElementById("pay-btn").disabled = false;
+      } catch (e) {
+        document.getElementById("pay-msg").textContent = "결제 화면을 불러오지 못했습니다. 새로고침해 주세요.";
+      }
+    }
+
+    // 서버에서 주문 만들기 → 토스 결제창 열기
+    async function pay() {
+      const btn = document.getElementById("pay-btn");
+      const msg = document.getElementById("pay-msg");
+      btn.disabled = true;
+      msg.textContent = "";
+      try {
+        const { orderId, amount, orderName } = await callFunction("create-order", { items: getCart() });
+        await widgets.setAmount({ currency: "KRW", value: amount });
+        await widgets.requestPayment({
+          orderId,
+          orderName,
+          customerEmail: user.email,
+          successUrl: new URL("success.html", location.href).href,
+          failUrl: new URL("fail.html", location.href).href,
+        });
+      } catch (e) {
+        msg.textContent = e.message || "결제를 시작하지 못했습니다. 다시 시도해 주세요.";
+      }
+      btn.disabled = false;
+    }
+
+    load();
+  </script>
+</body>
+</html>

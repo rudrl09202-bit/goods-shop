@@ -1,0 +1,74 @@
+/* 상품 상세 페이지 · 모바일 우선 (폰: 세로로 쌓기, 960px↑: 사진 왼쪽 · 정보 오른쪽) */
+.back {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  margin: -12px 0 12px;
+  color: var(--stone);
+  font-size: .85rem;
+  text-decoration: none;
+}
+.back:hover { color: var(--brass); }
+
+.pd-photo {
+  background: var(--mist);
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  margin: 0 -20px; /* 폰에서는 화면 끝까지 */
+}
+.pd-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.pd-info { padding-top: 24px; }
+.pd-cat { margin: 0 0 4px; color: var(--brass); font-size: .8rem; letter-spacing: .08em; }
+.pd-name { font-size: 1.7rem; margin: 0; }
+.pd-name::after { content: ""; display: block; width: 40px; height: 1px; background: var(--brass); margin-top: 16px; }
+.pd-price {
+  margin: 16px 0 0;
+  color: var(--brass);
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+}
+.pd-detail { margin: 20px 0 0; white-space: pre-line; color: #45484d; }
+
+.pd-qty {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 28px;
+  padding: 14px 0;
+  border-top: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
+  font-size: .9rem;
+  color: var(--stone);
+}
+.pd-qty .qty { color: var(--ink); }
+
+.pd-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+.pd-actions button { width: 100%; min-height: 52px; }
+.pd-actions button.secondary { border-color: var(--emerald); color: var(--emerald); }
+
+#msg a { color: var(--brass); font-weight: 500; }
+
+.not-found p { margin: 0 0 24px; font-family: var(--serif); font-size: 1.2rem; }
+
+/* ── 태블릿 ── */
+@media (min-width: 600px) {
+  .pd-photo { margin: 0; aspect-ratio: 1 / 1; }
+  .pd-name { font-size: 2rem; }
+  .pd-actions { flex-direction: row; }
+}
+
+/* ── PC ── */
+@media (min-width: 960px) {
+  .pd {
+    display: grid;
+    grid-template-columns: 6fr 5fr;
+    gap: 64px;
+    align-items: start;
+  }
+  .pd-photo { aspect-ratio: 4 / 5; }
+  .pd-info { padding-top: 8px; position: sticky; top: 96px; }
+  .pd-name { font-size: 2.2rem; }
+}

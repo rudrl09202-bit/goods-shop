@@ -1,0 +1,72 @@
+/* 내 결제 내역 · 관리자 페이지 (결제 취소, 상품 관리) */
+
+/* 작은 버튼 (표·목록 안) — 누르는 높이는 44px 유지 */
+button.small { padding: 6px 14px; font-size: .85rem; letter-spacing: .02em; white-space: nowrap; }
+button.danger { color: var(--err); }
+td button.small { margin: 4px 0; }
+
+/* 관리자 탭 */
+.admin-tabs { margin-bottom: 28px; }
+
+/* 상품 관리: 폰에서는 폼 → 목록 순서로 세로 */
+.manage { display: grid; gap: 32px; }
+
+.product-form { border-top: 3px solid var(--gold); border-radius: 2px; padding: 24px 20px; scroll-margin-top: 160px; } /* 폰 메뉴가 두 줄이라 넉넉히 */
+.product-form h2 { font-family: var(--serif); font-weight: 500; font-size: 1.2rem; margin: 0 0 4px; }
+.product-form label:first-of-type { margin-top: 8px; }
+textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 16px; /* 아이폰 자동 확대 방지 */
+  line-height: 1.6;
+  padding: 10px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--ink);
+  resize: vertical;
+}
+textarea:focus { border-color: var(--brass); outline: none; }
+.form-buttons { display: flex; gap: 8px; margin-top: 24px; }
+.form-buttons button { flex: 1; }
+.form-buttons button[hidden] { display: none; }
+
+#list-msg:empty { display: none; }
+#list-msg { margin: 0 0 12px; }
+
+/* 상품 목록 */
+.plist { list-style: none; margin: 0; padding: 0; }
+.plist li {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 8px 14px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--hair);
+}
+.thumb { width: 64px; aspect-ratio: 4 / 5; background: var(--mist); overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pinfo { display: flex; flex-direction: column; min-width: 0; }
+.pcat { color: var(--brass); font-size: .75rem; letter-spacing: .06em; }
+.pname { font-size: .95rem; line-height: 1.45; overflow-wrap: anywhere; }
+.pprice { font-family: var(--serif); font-variant-numeric: tabular-nums; }
+.pbuttons { grid-column: 1 / -1; display: flex; gap: 8px; }
+.pbuttons button { flex: 1; }
+
+/* ── 태블릿 ── */
+@media (min-width: 600px) {
+  .admin-tabs button { flex: 0 0 auto; padding: 10px 28px; }
+  td button.small { margin: 0; }
+  td:has(> button) { padding-top: 4px; padding-bottom: 4px; }
+  .form-buttons button { flex: 0 0 auto; min-width: 120px; }
+  .product-form { padding: 32px; scroll-margin-top: 80px; }
+  .plist li { grid-template-columns: 64px minmax(0, 1fr) auto; }
+  .pbuttons { grid-column: auto; }
+  .pbuttons button { flex: 0 0 auto; }
+}
+
+/* ── PC: 목록 왼쪽, 폼 오른쪽 ── */
+@media (min-width: 960px) {
+  .manage { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; gap: 48px; }
+  .product-form { order: 2; position: sticky; top: 80px; }
+}

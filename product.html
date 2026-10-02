@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAISON</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&family=Noto+Serif+KR:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/product.css">
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <a class="back" href="index.html#collection">← 컬렉션으로</a>
+    <div id="detail"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    const raw = new URLSearchParams(location.search).get("id");
+    const id = Number(raw);
+    let qty = 1;
+
+    function showNotFound() {
+      document.getElementById("detail").innerHTML = `
+        <div class="card center not-found">
+          <p>상품을 찾을 수 없습니다.</p>
+          <a class="btn" href="index.html#collection">컬렉션으로 돌아가기</a>
+        </div>`;
+    }
+
+    async function loadProduct() {
+      if (!raw || !Number.isInteger(id) || id < 1) return showNotFound();
+
+      const { data: p, error } = await sb.from("products").select("*").eq("id", id).maybeSingle();
+      if (error) {
+        document.getElementById("detail").innerHTML =
+          `<p class="msg error">상품을 불러오지 못했습니다: ${esc(error.message)}</p>`;
+        return;
+      }
+      if (!p) return showNotFound();
+
+      document.title = p.name + " | MAISON";
+      document.getElementById("detail").innerHTML = `
+        <div class="pd">
+          <div class="pd-photo"><img src="${esc(p.image_url)}" alt="${esc(p.name)}"></div>
+          <div class="pd-info">
+            <p class="pd-cat">${esc(p.description)}</p>
+            <h1 class="pd-name">${esc(p.name)}</h1>
+            <p class="pd-price">${won(p.price)}</p>
+            <p class="pd-detail">${esc(p.detail)}</p>
+            <div class="pd-qty">
+              <span>수량</span>
+              <div class="qty">
+                <button id="minus" onclick="changeQty(-1)" aria-label="하나 빼기">−</button>
+                <span id="qty">1</span>
+                <button id="plus" onclick="changeQty(1)" aria-label="하나 더하기">+</button>
+              </div>
+            </div>
+            <div class="pd-actions">
+              <button class="secondary" onclick="addCart()">장바구니 담기</button>
+              <button onclick="buyNow()">바로 구매</button>
+            </div>
+            <p id="msg" class="msg ok"></p>
+          </div>
+        </div>`;
+      changeQty(0);
+    }
+
+    // 수량은 1~10
+    function changeQty(d) {
+      qty = Math.max(1, Math.min(CART_MAX_QTY, qty + d));
+      document.getElementById("qty").textContent = qty;
+      document.getElementById("minus").disabled = qty <= 1;
+      document.getElementById("plus").disabled = qty >= CART_MAX_QTY;
+    }
+
+    function addCart() {
+      addToCart(id, qty);
+      document.getElementById("msg").innerHTML =
+        `장바구니에 담았습니다. <a href="cart.html">장바구니 보기</a>`;
+    }
+
+    function buyNow() {
+      addToCart(id, qty);
+      location.href = "cart.html";
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>

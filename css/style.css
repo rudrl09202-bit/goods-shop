@@ -234,21 +234,6 @@ button.link:hover:not(:disabled) { background: none; }
 .product:last-child { grid-column: span 2; }
 .product:last-child .photo { aspect-ratio: 1 / 1; }
 
-/* ── 결제 영역 ── */
-#checkout {
-  margin-top: 56px;
-  padding: 24px 20px;
-  border: 1px solid var(--gold-soft);
-  border-top: 3px solid var(--gold);
-  border-radius: 2px;
-  box-shadow: 0 18px 40px -24px rgba(14, 42, 36, .35);
-}
-#checkout .summary { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
-#checkout-name { font-family: var(--serif); font-weight: 500; font-size: 1.25rem; }
-#checkout-price { color: var(--brass); font-family: var(--serif); font-weight: 500; font-size: 1.1rem; }
-.actions { display: flex; gap: 8px; margin-top: 16px; }
-.actions button { flex: 1; }
-
 /* ── 로그인 폼 ── */
 main.auth {
   max-width: none;
@@ -311,6 +296,36 @@ td::before { content: attr(data-label); color: var(--stone); text-align: left; f
 .badge.paid { color: var(--ok); }
 .badge.pending { color: var(--warn); }
 .badge.failed { color: var(--err); }
+.badge.canceled { color: var(--stone); }
+
+/* 메뉴의 장바구니 개수 */
+.cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 5px;
+  border-radius: 9px;
+  background: var(--gold);
+  color: var(--emerald);
+  font-size: .7rem;
+  font-weight: 600;
+}
+
+/* 수량 선택 (−  1  +) : <div class="qty"><button>−</button><span>1</span><button>+</button></div> */
+.qty { display: inline-flex; align-items: center; border: 1px solid var(--hair); border-radius: 2px; }
+.qty button {
+  min-width: var(--touch);
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--ink);
+  font-size: 1.1rem;
+}
+.qty button:hover:not(:disabled) { background: var(--mist); }
+.qty span { min-width: 36px; text-align: center; font-variant-numeric: tabular-nums; }
 .empty { color: var(--stone); text-align: center; padding: 48px 0; }
 
 /* 관리자 요약 */
@@ -359,10 +374,6 @@ td::before { content: attr(data-label); color: var(--stone); text-align: left; f
   .product:last-child { grid-column: auto; }
   .product:last-child .photo { aspect-ratio: 4 / 5; }
   .product:first-child .name { font-size: 1.4rem; }
-  #checkout { padding: 32px; }
-  #checkout .summary { flex-direction: row; justify-content: space-between; align-items: baseline; }
-  .actions { justify-content: flex-end; }
-  .actions button { flex: 0 0 auto; min-width: 120px; }
   main.auth { padding: 96px 32px; }
   .form { padding: 40px 36px; }
 

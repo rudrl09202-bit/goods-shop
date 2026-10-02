@@ -22,28 +22,24 @@
   <script>
     // 토스가 넘겨준 값으로 서버(Edge Function)에 결제 승인 요청
     async function confirmPayment() {
-      await requireLogin();
+      if (!(await requireLogin())) return;
       const q = new URLSearchParams(location.search);
-      const { data, error } = await sb.functions.invoke("confirm-payment", {
-        body: {
+      const title = document.getElementById("title");
+      const detail = document.getElementById("detail");
+      try {
+        const data = await callFunction("confirm-payment", {
           paymentKey: q.get("paymentKey"),
           orderId: q.get("orderId"),
           amount: Number(q.get("amount")),
-        },
-      });
-
-      const title = document.getElementById("title");
-      const detail = document.getElementById("detail");
-      if (error) {
-        let message = error.message;
-        try { message = (await error.context.json()).message; } catch (_) {}
+        });
+        clearCart();
+        title.textContent = "결제가 완료되었습니다";
+        detail.innerHTML = `${esc(data.order.product_name)}<br><strong>${won(data.order.amount)}</strong>`;
+      } catch (e) {
         title.textContent = "결제에 실패했습니다";
         detail.className = "msg error";
-        detail.textContent = message;
-        return;
+        detail.textContent = e.message;
       }
-      title.textContent = "결제가 완료되었습니다";
-      detail.textContent = `${data.order.product_name}, ${won(data.order.amount)}`;
     }
 
     confirmPayment();

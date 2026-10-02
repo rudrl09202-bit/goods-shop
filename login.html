@@ -62,7 +62,10 @@
           : error.message;
         return;
       }
-      location.href = data.user.email === ADMIN_EMAIL ? "admin.html" : "index.html";
+      // ?next=cart.html 처럼 돌아갈 페이지가 있으면 그리로 (같은 사이트의 페이지 이름만 허용)
+      const next = new URLSearchParams(location.search).get("next");
+      if (next && /^[a-z]+\.html$/.test(next)) location.href = next;
+      else location.href = data.user.email === ADMIN_EMAIL ? "admin.html" : "index.html";
     });
   </script>
 </body>

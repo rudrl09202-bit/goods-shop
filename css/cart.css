@@ -1,0 +1,67 @@
+/* 장바구니 · 모바일 우선 (기본 = 폰, 600px↑ 태블릿, 960px↑ PC) */
+
+.empty p { margin: 0 0 20px; }
+
+/* ── 상품 줄 ── 폰: 사진 + 이름/가격, 아래에 수량·삭제·소계 */
+.lines { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--emerald); }
+.line {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  grid-template-areas:
+    "photo info"
+    "actions actions";
+  gap: 12px 14px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--hair);
+}
+.line-photo { grid-area: photo; background: var(--mist); aspect-ratio: 4 / 5; overflow: hidden; }
+.line-photo img { width: 100%; height: 100%; object-fit: cover; }
+.line-info { grid-area: info; display: flex; flex-direction: column; min-width: 0; }
+.line-desc { color: var(--brass); font-size: .75rem; letter-spacing: .06em; }
+.line-name { color: var(--ink); text-decoration: none; font-family: var(--serif); font-weight: 500; font-size: 1rem; line-height: 1.45; margin: 2px 0 4px; }
+.line-name:hover { color: var(--brass); }
+.line-price { color: var(--stone); font-size: .88rem; font-variant-numeric: tabular-nums; }
+.line-actions { grid-area: actions; display: flex; align-items: center; gap: 4px; }
+.line-actions .remove { min-width: var(--touch); font-size: .85rem; text-decoration: underline; text-underline-offset: 3px; }
+.line-sub {
+  grid-area: actions;
+  justify-self: end;
+  align-self: center;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 합계 + 결제 ── */
+.summary {
+  margin-top: 32px;
+  padding: 24px 20px;
+  border: 1px solid var(--gold-soft);
+  border-top: 3px solid var(--gold);
+  border-radius: 2px;
+  box-shadow: 0 18px 40px -24px rgba(14, 42, 36, .35);
+}
+.total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+.total span { color: var(--stone); letter-spacing: .1em; }
+.total strong { color: var(--brass); font-family: var(--serif); font-weight: 500; font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+#login-link, #pay-btn { width: 100%; }
+#pay-btn { margin-top: 12px; }
+#load-msg:empty, #pay-msg:empty, #login-link[hidden] { display: none; }
+
+/* ── 태블릿: 한 줄에 사진 · 이름 · 수량 · 소계 ── */
+@media (min-width: 600px) {
+  .line {
+    grid-template-columns: 96px 1fr auto 120px;
+    grid-template-areas: "photo info actions sub";
+    align-items: center;
+    gap: 20px;
+  }
+  .line-sub { grid-area: sub; font-size: 1.05rem; }
+  .summary { padding: 32px; }
+}
+
+/* ── PC: 목록 왼쪽, 결제 오른쪽 ── */
+@media (min-width: 960px) {
+  .cart { display: grid; grid-template-columns: 1fr 420px; gap: 48px; align-items: start; }
+  .summary { margin-top: 0; }
+}
