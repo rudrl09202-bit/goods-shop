@@ -44,7 +44,7 @@ async function renderNav() {
     links += `<a href="login.html">로그인</a>`;
   }
   document.getElementById("nav").innerHTML =
-    `<a class="logo" href="index.html">🛍️ 굿즈샵</a><div class="nav-links">${links}</div>`;
+    `<a class="logo" href="index.html">MAISON</a><div class="nav-links">${links}</div>`;
 }
 
 renderNav();

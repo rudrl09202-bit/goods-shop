@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>굿즈샵</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <title>MAISON</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&family=Noto+Serif+KR:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <nav id="nav"></nav>
   <main>
-    <h1>굿즈 둘러보기</h1>
+    <div class="intro">
+      <h1>오래 쓰는 물건들</h1>
+      <p>가죽 소품과 주얼리, 시계까지 직접 고른 열두 가지</p>
+    </div>
     <div id="products" class="products"></div>
 
     <section id="checkout" class="card" hidden>
@@ -46,13 +49,12 @@
       }
       products = data;
       box.innerHTML = data.map(p => `
-        <div class="card product">
-          <img src="${p.image_url}" alt="${p.name}" loading="lazy">
-          <div class="name">${p.name}</div>
-          <div class="desc">${p.description}</div>
-          <div class="price">${won(p.price)}</div>
-          <button onclick="buy(${p.id})">구매하기</button>
-        </div>`).join("");
+        <button class="product" onclick="buy(${p.id})" aria-label="${p.name} 구매하기">
+          <span class="photo"><img src="${p.image_url}" alt="" loading="lazy"></span>
+          <span class="desc">${p.description}</span>
+          <span class="name">${p.name}</span>
+          <span class="price">${won(p.price)}</span>
+        </button>`).join("");
     }
 
     // 상품 선택 → 토스 결제위젯 표시
