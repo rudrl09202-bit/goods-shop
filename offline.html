@@ -18,9 +18,13 @@
   <main>
     <div class="card center">
       <h1>인터넷 연결이 없습니다</h1>
-      <p class="msg">연결을 확인한 뒤 다시 시도해 주세요.</p>
+      <p class="msg">연결을 확인한 뒤 다시 시도해 주세요.<br>결제는 인터넷이 연결된 상태에서만 할 수 있어요.</p>
       <p><button onclick="location.reload()">다시 시도</button></p>
     </div>
   </main>
+  <script>
+    // 연결이 돌아오면 보려던 페이지를 자동으로 다시 불러옴
+    addEventListener("online", () => location.reload());
+  </script>
 </body>
 </html>
