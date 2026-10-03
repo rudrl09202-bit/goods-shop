@@ -15,6 +15,11 @@
   --warn: #8a6a33;
   --err: #a23b3b;
   --touch: 44px;         /* 손가락으로 누르기 충분한 최소 크기 */
+  /* 안전 영역: 앱으로 실행할 때 노치·홈 바에 가리지 않도록 띄울 만큼 (일반 화면에서는 0) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
   --serif: "Noto Serif KR", serif;
   --sans: "Noto Sans KR", sans-serif;
   color-scheme: light;
@@ -32,6 +37,7 @@ body {
   -webkit-text-size-adjust: 100%;
   word-break: keep-all; /* 한글을 단어 단위로 줄바꿈 */
   min-height: 100vh;
+  min-height: 100dvh; /* 휴대폰 주소창을 뺀 실제 높이 */
   display: flex;
   flex-direction: column;
 }
@@ -48,7 +54,7 @@ img { max-width: 100%; display: block; }
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  padding: 4px 16px;
+  padding: calc(4px + var(--safe-top)) max(16px, var(--safe-right)) 4px max(16px, var(--safe-left));
   background: var(--emerald);
   border-bottom: 1px solid var(--gold-soft);
 }
@@ -82,7 +88,7 @@ img { max-width: 100%; display: block; }
     radial-gradient(ellipse at 85% 20%, rgba(201, 169, 110, .18), transparent 55%),
     linear-gradient(160deg, var(--emerald) 0%, #0a1f1b 100%);
   color: var(--ivory);
-  padding: 48px 20px 40px;
+  padding: 48px max(20px, var(--safe-right)) 40px max(20px, var(--safe-left));
 }
 .hero-text { position: relative; z-index: 1; }
 .hero-line { display: block; width: 56px; height: 1px; background: var(--gold); margin-bottom: 20px; }
@@ -123,7 +129,7 @@ img { max-width: 100%; display: block; }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
 @keyframes fade { from { opacity: 0; } }
 
-main { width: 100%; max-width: 1200px; margin: 0 auto; padding: 32px 20px 72px; }
+main { width: 100%; max-width: 1200px; margin: 0 auto; padding: 32px max(20px, var(--safe-right)) 72px max(20px, var(--safe-left)); }
 h1 {
   font-family: var(--serif);
   font-weight: 500;
@@ -135,7 +141,7 @@ h1 {
 main > h1::after { content: ""; display: block; width: 40px; height: 1px; background: var(--brass); margin-top: 14px; }
 
 /* 섹션 제목: 양옆 금색 선 */
-.section-title { text-align: center; margin: 16px 0 36px; scroll-margin-top: 72px; }
+.section-title { text-align: center; margin: 16px 0 36px; scroll-margin-top: calc(72px + var(--safe-top)); }
 .section-title h2 {
   font-family: var(--serif);
   font-weight: 500;
@@ -237,7 +243,7 @@ button.link:hover:not(:disabled) { background: none; }
 /* ── 로그인 폼 ── */
 main.auth {
   max-width: none;
-  padding: 48px 16px 72px;
+  padding: 48px max(16px, var(--safe-right)) 72px max(16px, var(--safe-left));
   background:
     radial-gradient(ellipse at 20% 0%, rgba(201, 169, 110, .16), transparent 50%),
     linear-gradient(170deg, var(--emerald), #0a1f1b);
@@ -343,12 +349,37 @@ td::before { content: attr(data-label); color: var(--stone); text-align: left; f
   background: var(--emerald);
   color: rgba(243, 238, 228, .6);
   text-align: center;
-  padding: 40px 20px;
+  padding: 40px max(20px, var(--safe-right)) calc(40px + var(--safe-bottom)) max(20px, var(--safe-left));
   font-size: .8rem;
   border-top: 1px solid var(--gold-soft);
 }
 .footer-logo { font-family: var(--serif); font-size: 1.4rem; letter-spacing: .4em; color: var(--gold); margin-bottom: 8px; }
 .site-footer p { margin: 0; }
+
+/* ── 홈 화면 추가 안내 띠 (휴대폰 첫 방문 때 한 번) ── */
+.install-guide {
+  position: fixed;
+  left: max(12px, var(--safe-left));
+  right: max(12px, var(--safe-right));
+  bottom: calc(12px + var(--safe-bottom));
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px 6px 16px;
+  background: var(--emerald);
+  color: var(--ivory);
+  border: 1px solid var(--gold-soft);
+  border-radius: 4px;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, .45);
+  font-size: .87rem;
+  animation: rise .5s ease-out both;
+}
+.install-guide p { flex: 1; margin: 0; }
+.install-guide .install-btn { background: var(--gold); border-color: var(--gold); color: var(--emerald); padding: 8px 18px; }
+.install-guide .install-btn:hover { background: var(--ivory); }
+.install-guide .install-close { min-width: var(--touch); padding: 0; background: none; border: none; color: rgba(243, 238, 228, .7); font-size: 1.3rem; }
+.install-guide .install-close:hover:not(:disabled) { background: none; color: var(--ivory); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -357,11 +388,11 @@ td::before { content: attr(data-label); color: var(--stone); text-align: left; f
 
 /* ── 태블릿 ── */
 @media (min-width: 600px) {
-  #nav { padding: 6px 32px; }
+  #nav { padding: calc(6px + var(--safe-top)) max(32px, var(--safe-right)) 6px max(32px, var(--safe-left)); }
   .nav-email { display: inline; }
-  .hero { padding: 72px 32px 64px; }
+  .hero { padding: 72px max(32px, var(--safe-right)) 64px max(32px, var(--safe-left)); }
   .hero h1 { font-size: 3rem; }
-  main { padding: 56px 32px 96px; }
+  main { padding: 56px max(32px, var(--safe-right)) 96px max(32px, var(--safe-left)); }
   .section-title { margin-bottom: 48px; }
   .section-title h2 { font-size: 1.8rem; }
   .section-title h2::before, .section-title h2::after { width: 80px; }
@@ -374,7 +405,7 @@ td::before { content: attr(data-label); color: var(--stone); text-align: left; f
   .product:last-child { grid-column: auto; }
   .product:last-child .photo { aspect-ratio: 4 / 5; }
   .product:first-child .name { font-size: 1.4rem; }
-  main.auth { padding: 96px 32px; }
+  main.auth { padding: 96px max(32px, var(--safe-right)) 96px max(32px, var(--safe-left)); }
   .form { padding: 40px 36px; }
 
   /* 결제 내역: 표 모양 */

@@ -126,3 +126,44 @@ function renderFooter() {
 
 renderNav();
 renderFooter();
+
+// 앱처럼 설치(홈 화면에 추가)할 수 있게 서비스 워커 등록 (sw.js)
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+
+// ── 홈 화면 추가 안내: 휴대폰·태블릿에서 처음 한 번만 아래에 띠로 보여줌 ──
+const INSTALL_SEEN_KEY = "install-guide-seen";
+
+function canShowInstallGuide() {
+  const mobile = matchMedia("(pointer: coarse) and (max-width: 959px)").matches;
+  const installed = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  let seen = true;
+  try { seen = localStorage.getItem(INSTALL_SEEN_KEY) === "1"; } catch (_) {}
+  return mobile && !installed && !seen;
+}
+
+// text: 안내 글, onInstall: [설치] 버튼을 누르면 할 일 (없으면 버튼 없음)
+function showInstallGuide(text, onInstall) {
+  try { localStorage.setItem(INSTALL_SEEN_KEY, "1"); } catch (_) {}
+  const bar = document.createElement("div");
+  bar.className = "install-guide";
+  bar.innerHTML = `<p>${text}</p>
+    ${onInstall ? `<button class="install-btn">설치</button>` : ""}
+    <button class="install-close" aria-label="안내 닫기">×</button>`;
+  bar.querySelector(".install-close").onclick = () => bar.remove();
+  if (onInstall) bar.querySelector(".install-btn").onclick = () => { bar.remove(); onInstall(); };
+  document.body.append(bar);
+}
+
+// 안드로이드(크롬·삼성 인터넷): 브라우저가 "설치할 수 있음" 신호를 주면 띠 표시
+addEventListener("beforeinstallprompt", e => {
+  if (!canShowInstallGuide()) return;
+  e.preventDefault();
+  showInstallGuide("turingshop 앱으로 설치하면 더 편해요", () => e.prompt());
+});
+
+// 아이폰·아이패드 사파리: 설치 신호가 없어서 방법을 글로 안내 (카카오톡 등 앱 안 브라우저는 제외)
+const ua = navigator.userAgent;
+const iosSafari = /iPhone|iPad|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|KAKAOTALK|NAVER|Instagram|FBAN|Line/.test(ua);
+if (iosSafari && canShowInstallGuide()) {
+  setTimeout(() => showInstallGuide("공유 버튼 → '홈 화면에 추가'로 앱처럼 쓸 수 있어요"), 2000);
+}

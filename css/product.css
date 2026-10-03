@@ -69,6 +69,6 @@
     align-items: start;
   }
   .pd-photo { aspect-ratio: 4 / 5; }
-  .pd-info { padding-top: 8px; position: sticky; top: 96px; }
+  .pd-info { padding-top: 8px; position: sticky; top: calc(96px + var(--safe-top)); }
   .pd-name { font-size: 2.2rem; }
 }
