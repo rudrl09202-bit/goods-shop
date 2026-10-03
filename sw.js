@@ -1,7 +1,7 @@
 // 서비스 워커: 홈 화면 설치 + 인터넷이 끊겼을 때 대비
 // 항상 인터넷에서 새로 받아오고, 받은 것은 저장해 둔다. 실패했을 때만 저장해 둔 것을 보여준다.
 // 로그인·주문·결제(토스)·상품 사진은 건드리지 않는다 (항상 실시간).
-const CACHE = "turingshop-v1";
+const CACHE = "turingshop-v2";
 const FILES = ["offline.html", "css/style.css", "icons/icon-192.png"];
 
 self.addEventListener("install", e => {
@@ -49,4 +49,24 @@ self.addEventListener("fetch", e => {
         return Response.error();
       })
   );
+});
+
+// ── 푸시 알림: 서버(Edge Function)가 보낸 알림을 화면에 띄움 ──
+self.addEventListener("push", e => {
+  const data = e.data ? e.data.json() : {};
+  e.waitUntil(self.registration.showNotification(data.title || "turingshop", {
+    body: data.body || "",
+    icon: "icons/icon-192.png",
+    data: { url: data.url || "index.html" },
+  }));
+});
+
+// 알림을 누르면: 열려 있는 창이 있으면 그 창으로, 없으면 새로 열기
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const url = new URL(e.notification.data.url, self.registration.scope).href;
+  e.waitUntil(clients.matchAll({ type: "window" }).then(list => {
+    const win = list.find(c => c.url.startsWith(self.registration.scope));
+    return win ? win.focus().then(w => w.navigate(url)) : clients.openWindow(url);
+  }));
 });

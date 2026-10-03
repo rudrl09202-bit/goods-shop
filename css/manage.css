@@ -65,6 +65,15 @@ textarea:focus { border-color: var(--brass); outline: none; }
   .pbuttons button { flex: 0 0 auto; }
 }
 
+/* ── 내 결제 내역: 알림 칸 ── */
+.push-box { margin-bottom: 32px; border-top: 3px solid var(--gold); }
+.push-box h2 { font-family: var(--serif); font-weight: 500; font-size: 1.15rem; margin: 0 0 6px; }
+.push-box > p:not(.msg) { margin: 0 0 14px; color: var(--stone); font-size: .9rem; }
+.push-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.push-buttons button { flex: 1 1 auto; }
+#push-msg:empty { display: none; }
+@media (min-width: 600px) { .push-buttons button { flex: 0 0 auto; } }
+
 /* ── PC: 목록 왼쪽, 폼 오른쪽 ── */
 @media (min-width: 960px) {
   .manage { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; gap: 48px; }

@@ -19,6 +19,12 @@
   <nav id="nav"></nav>
   <main>
     <h1>내 결제 내역</h1>
+    <section id="push" class="card push-box" hidden>
+      <h2>알림</h2>
+      <p id="push-text"></p>
+      <div id="push-buttons" class="push-buttons"></div>
+      <p id="push-msg" class="msg"></p>
+    </section>
     <div class="card table-wrap" id="list">불러오는 중...</div>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -67,6 +73,92 @@
     });
 
     loadOrders();
+
+    // ── 푸시 알림: 먼저 설명하고, [알림 받기]를 눌렀을 때만 브라우저 허용 창을 띄움 ──
+    const pushSupported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+
+    // 공개 키 글자 → 브라우저가 원하는 바이트 모양
+    function keyBytes(base64) {
+      const raw = atob((base64 + "=".repeat((4 - base64.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/"));
+      return Uint8Array.from(raw, c => c.charCodeAt(0));
+    }
+
+    // 이 기기가 알림을 받는 중인지 (브라우저 구독 + DB 에 저장된 것까지 확인)
+    async function currentSubscription() {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (!sub || Notification.permission !== "granted") return null;
+      const { data } = await sb.from("push_subscriptions").select("id").eq("endpoint", sub.endpoint).maybeSingle();
+      return data ? sub : null;
+    }
+
+    async function renderPush() {
+      if (!(await getUser())) return;
+      const box = document.getElementById("push");
+      const text = document.getElementById("push-text");
+      const buttons = document.getElementById("push-buttons");
+      box.hidden = false;
+      buttons.innerHTML = "";
+
+      if (!pushSupported) {
+        text.textContent = /iPhone|iPad|iPod/.test(navigator.userAgent)
+          ? "아이폰은 홈 화면에 추가한 앱에서만 알림을 받을 수 있어요."
+          : "이 브라우저는 알림을 지원하지 않아요.";
+      } else if (Notification.permission === "denied") {
+        text.textContent = "알림이 차단되어 있어요. 브라우저(또는 휴대폰) 설정에서 이 사이트의 알림을 허용해 주세요.";
+      } else if (await currentSubscription()) {
+        text.textContent = "이 기기에서 알림을 받고 있어요.";
+        buttons.innerHTML = `<button onclick="pushAction(this, sendTestPush)">테스트 알림 보내기</button>
+          <button class="secondary" onclick="pushAction(this, unsubscribePush)">알림 끄기</button>`;
+      } else {
+        text.textContent = "이 기기로 turingshop 알림을 받을까요? 허용하면 알림이 오고, 언제든 끌 수 있어요.";
+        buttons.innerHTML = `<button onclick="pushAction(this, subscribePush)">알림 받기</button>`;
+      }
+    }
+
+    // 버튼 공통: 누르는 동안 막고, 결과·오류 글을 보여줌
+    async function pushAction(btn, fn) {
+      const msg = document.getElementById("push-msg");
+      btn.disabled = true;
+      msg.className = "msg";
+      msg.textContent = "";
+      try {
+        msg.textContent = (await fn()) || "";
+        msg.className = "msg ok";
+      } catch (e) {
+        msg.textContent = e.message;
+        msg.className = "msg error";
+      }
+      btn.disabled = false;
+      if (fn !== sendTestPush) await renderPush();
+    }
+
+    async function subscribePush() {
+      if ((await Notification.requestPermission()) !== "granted") return "알림을 허용하지 않았어요.";
+      const reg = await navigator.serviceWorker.ready;
+      const old = await reg.pushManager.getSubscription();
+      if (old) await old.unsubscribe(); // 새로 받아서 지금 로그인한 사람 것으로 저장
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_PUBLIC_KEY) });
+      const { endpoint, keys } = sub.toJSON();
+      const { error } = await sb.from("push_subscriptions").insert({ endpoint, p256dh: keys.p256dh, auth: keys.auth });
+      if (error) { await sub.unsubscribe(); throw new Error("알림 설정을 저장하지 못했어요. 다시 시도해 주세요."); }
+      return "알림을 켰어요.";
+    }
+
+    async function sendTestPush() {
+      return (await callFunction("send-test-push", {})).message;
+    }
+
+    async function unsubscribePush() {
+      const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+      if (sub) {
+        await sb.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+        await sub.unsubscribe();
+      }
+      return "알림을 껐어요.";
+    }
+
+    renderPush();
   </script>
 </body>
 </html>
