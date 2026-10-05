@@ -187,15 +187,19 @@ button.link:hover:not(:disabled) { background: none; }
 
 /* ── 상품 ── 폰 2열, 첫 상품은 크게 */
 .products { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px 14px; }
-.product {
+.product { display: flex; flex-direction: column; min-width: 0; }
+.product > a {
   all: unset;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  flex: 1;
+  min-height: 0;
 }
-.product > span { display: block; }
-.product:focus-visible { outline: 2px solid var(--brass); outline-offset: 4px; }
+.product > a > span { display: block; }
+.product > a:focus-visible { outline: 2px solid var(--brass); outline-offset: 4px; }
+/* 카드 아래 버튼 줄: 버튼을 세로로 꽉 차게 */
+.product-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
 .product .photo {
   position: relative;
   background: var(--mist);
@@ -225,9 +229,11 @@ button.link:hover:not(:disabled) { background: none; }
   transform: translateY(100%);
   transition: transform .35s ease;
 }
-.product:hover img { transform: scale(1.05); }
-.product:hover .photo::after { border-color: var(--gold); }
-.product:hover .buy { transform: translateY(0); }
+.product > a:hover img { transform: scale(1.05); }
+.product > a:hover .photo::after { border-color: var(--gold); }
+.product > a:hover .buy { transform: translateY(0); }
+/* 인기 상품: 컬렉션과 같은 카드, 모두 같은 크기 */
+.popular-section { margin-bottom: 64px; }
 .product .desc { color: var(--brass); font-size: .75rem; letter-spacing: .06em; }
 .product .name { font-size: .93rem; line-height: 1.45; margin: 2px 0 6px; }
 .product .price { font-family: var(--serif); font-size: 1rem; font-variant-numeric: tabular-nums; }
@@ -405,6 +411,13 @@ td::before { content: attr(data-label); color: var(--stone); text-align: left; f
   .product:last-child { grid-column: auto; }
   .product:last-child .photo { aspect-ratio: 4 / 5; }
   .product:first-child .name { font-size: 1.4rem; }
+  /* 인기 상품: 4열 한 줄, 첫 상품 크게 하기 없음 */
+  .products.popular { grid-template-columns: repeat(4, 1fr); }
+  .popular .product:first-child { grid-column: auto; grid-row: auto; }
+  .popular .product:first-child .photo { aspect-ratio: 4 / 5; flex: none; }
+  .popular .product:first-child img { position: static; }
+  .popular .product:first-child .name { font-size: 1rem; }
+  .popular-section { margin-bottom: 96px; }
   main.auth { padding: 96px max(32px, var(--safe-right)) 96px max(32px, var(--safe-left)); }
   .form { padding: 40px 36px; }
 

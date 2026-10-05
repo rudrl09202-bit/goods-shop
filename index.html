@@ -19,8 +19,8 @@
   <header class="hero">
     <div class="hero-text">
       <span class="hero-line"></span>
-      <h1>오래 쓰는 물건들</h1>
-      <p>가죽 소품과 주얼리, 시계까지<br>직접 고른 열두 가지</p>
+      <h1>쓸수록 내 것이 되는 물건</h1>
+      <p>손때 묻을수록 깊어지는 가죽, 매일 곁에 두고 싶은 주얼리와 시계<br>오래 함께할 열두 가지를 골랐습니다</p>
       <a class="btn gold" href="#collection">컬렉션 보기</a>
     </div>
     <div class="hero-photos" aria-hidden="true">
@@ -30,6 +30,14 @@
     </div>
   </header>
   <main>
+    <!-- 인기 상품: 판매 기록이 있을 때만 보임 -->
+    <section class="popular-section" id="popular" hidden>
+      <div class="section-title">
+        <h2>인기 상품</h2>
+        <p>가장 많이 팔린 상품</p>
+      </div>
+      <div id="popular-products" class="products popular"></div>
+    </section>
     <div class="section-title" id="collection">
       <h2>컬렉션</h2>
       <p id="count"></p>
@@ -49,15 +57,41 @@
         return;
       }
       document.getElementById("count").textContent = `${data.length}점`;
-      box.innerHTML = data.map(p => `
-        <a class="product" href="product.html?id=${p.id}" aria-label="${esc(p.name)} 자세히 보기">
-          <span class="photo"><img src="${esc(p.image_url)}" alt="" loading="lazy"><span class="buy">자세히 보기</span></span>
-          <span class="desc">${esc(p.description)}</span>
-          <span class="name">${esc(p.name)}</span>
-          <span class="price">${won(p.price)}</span>
-        </a>`).join("");
+      box.innerHTML = data.map(productCard).join("");
     }
 
+    // 인기 상품: 결제 완료 수량이 많은 순 (DB 함수 popular_products)
+    async function loadPopular() {
+      const { data, error } = await sb.rpc("popular_products", { max_count: 4 });
+      // 실패하거나 판매 기록이 없으면 섹션을 숨긴 채로 둠
+      if (error || !data.length) return;
+      document.getElementById("popular-products").innerHTML = data.map(productCard).join("");
+      document.getElementById("popular").hidden = false;
+    }
+
+    function productCard(p) {
+      return `
+        <div class="product">
+          <a href="product.html?id=${p.id}" aria-label="${esc(p.name)} 자세히 보기">
+            <span class="photo"><img src="${esc(p.image_url)}" alt="" loading="lazy"><span class="buy">자세히 보기</span></span>
+            <span class="desc">${esc(p.description)}</span>
+            <span class="name">${esc(p.name)}</span>
+            <span class="price">${won(p.price)}</span>
+          </a>
+          <div class="product-actions">
+            <button class="secondary" onclick="addToCart(${p.id})">장바구니 담기</button>
+            <button onclick="buyNow(${p.id})">바로 구매</button>
+            <button class="link" onclick="removeFromCart(${p.id})">취소</button>
+          </div>
+        </div>`;
+    }
+
+    function buyNow(id) {
+      addToCart(id);
+      location.href = "cart.html";
+    }
+
+    loadPopular();
     loadProducts();
   </script>
 </body>

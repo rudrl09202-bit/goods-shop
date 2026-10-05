@@ -5,7 +5,7 @@
 // 로그인·주문·결제(토스)·상품 사진은 건드리지 않는다 (항상 실시간).
 importScripts("js/config.js"); // SUPABASE_URL, SUPABASE_KEY (공개 값)
 
-const CACHE = "turingshop-v4";
+const CACHE = "turingshop-v5";
 const FILES = [
   "index.html", "product.html", "offline.html",
   "css/style.css", "css/product.css", "js/config.js", "js/common.js",
